@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing Terraform"
+      - wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+      - unzip terraform_${TF_VERSION}_linux_amd64.zip -d /usr/bin/
+      - chmod +x terraform
+      - echo "Terraform version"
+      - terraform --version
+
+  build:
+    commands:
+      - echo "Navigate to terraform directory..."
+      - cd $TERRAFORM_SRC_DIR
+      - echo "Terraform commands execution..."
+      #- aws s3 ls
+      - /usr/bin/terraform ${TF_ACTION_INIT} -backend-config=$CONF_FILE  #"/usr/bin/terraform" represents "terraform" in command terraform init
+      - /usr/bin/terraform $FORMAT
+      - /usr/bin/terraform $VALIDATE
+      - /usr/bin/terraform ${TF_ACTION_PLAN} -var-file=$TFVARS -lock=false
+      - /usr/bin/terraform ${TF_ACTION_APPLY} -var-file=$TFVARS -auto-approve
+
+  post_build:
+    commands:
+      - echo "Terraform execution completed"
+
+artifacts:
+  files:
+    - '**/*'
